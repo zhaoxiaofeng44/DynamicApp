@@ -16,6 +16,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 import dalvik.system.DexClassLoader;
 import dalvik.system.PathClassLoader;
@@ -32,7 +34,7 @@ public class MainApplication extends Application {
 
         final  String  dexPath = copyFileFromAssets(this,"test.apk");
         final String optimizedDexOutputPath = getOptimizedDexPath(this);
-        injectAboveEqualApiLevel14(this,dexPath,optimizedDexOutputPath,null);
+        SimpleDexUtils.injectAbove(this,dexPath,optimizedDexOutputPath,null);
     }
 
     public static String getOptimizedDexPath(Context context) {
@@ -101,73 +103,97 @@ public class MainApplication extends Application {
 //        }
 //    }
 
-    public static Boolean injectAboveEqualApiLevel14(Context context,String dexPath, String defaultDexOptPath, String nativeLibPath) {
-        Log.i("mytest", "--> injectAboveEqualApiLevel14");
-        PathClassLoader pathClassLoader = (PathClassLoader) context.getClassLoader();;
-        DexClassLoader dexClassLoader = new DexClassLoader(dexPath, defaultDexOptPath, nativeLibPath, pathClassLoader.getParent());
-        try {
-
-            Object arr = getDexElements(getPathList(pathClassLoader));
-
-            int len = Array.getLength(arr);
-            for (int k = 0; k < len; ++k) {
-                Log.v("mytest","class cc  " + Array.get(arr, k).toString());
-            }
-
-            Object dexElements = combineArray(
-
-                    getDexElements(getPathList(dexClassLoader)),
-                    getDexElements(getPathList(pathClassLoader))
-            );
-            Object pathList = getPathList(pathClassLoader);
-            setField(pathList, pathList.getClass(), "dexElements", dexElements);
-        } catch (Throwable e) {
-            e.printStackTrace();
-            return false;
-        }
-        Log.i("mytest", "<-- injectAboveEqualApiLevel14 End.");
-        return true;
-    }
-
-    private static Object getPathList(Object baseDexClassLoader)
-            throws IllegalArgumentException, NoSuchFieldException, IllegalAccessException, ClassNotFoundException {
-        return getField(baseDexClassLoader, Class.forName("dalvik.system.BaseDexClassLoader"), "pathList");
-    }
-
-
-    private static Object getDexElements(Object paramObject)
-            throws IllegalArgumentException, NoSuchFieldException, IllegalAccessException {
-        return getField(paramObject, paramObject.getClass(), "dexElements");
-    }
-
-
-    private static Object getField(Object obj, Class<?> cl, String field)
-            throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        Field localField = cl.getDeclaredField(field);
-        localField.setAccessible(true);
-        return localField.get(obj);
-    }
-
-
-    private static void setField(Object obj, Class<?> cl, String field, Object value)
-            throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        Field localField = cl.getDeclaredField(field);
-        localField.setAccessible(true);
-        localField.set(obj, value);
-    }
-
-    private static Object combineArray(Object arrayLhs, Object arrayRhs) {
-        Class<?> localClass = arrayLhs.getClass().getComponentType();
-        int i = Array.getLength(arrayLhs);
-        int j = i + Array.getLength(arrayRhs);
-        Object result = Array.newInstance(localClass, j);
-        for (int k = 0; k < j; ++k) {
-            if (k < i) {
-                Array.set(result, k, Array.get(arrayLhs, k));
-            } else {
-                Array.set(result, k, Array.get(arrayRhs, k - i));
-            }
-        }
-        return result;
-    }
+//    private static void test(String fileDir) {
+//        List<File> fileList = new ArrayList<File>();
+//        File file = new File(fileDir);
+//        File[] files = file.listFiles();// 获取目录下的所有文件或文件夹
+//        if (files == null) {// 如果目录为空，直接退出
+//            return;
+//        }
+//        // 遍历，目录下的所有文件
+//        for (File f : files) {
+//            if (f.isFile()) {
+//                fileList.add(f);
+//                Log.v("test >> ",f.getAbsolutePath());
+//            } else if (f.isDirectory()) {
+//                //Log.v("test >> ",f.getAbsolutePath());
+//                test(f.getAbsolutePath());
+//            }
+//        }
+//        for (File f1 : fileList) {
+//            //System.out.println(f1.getName());
+//        }
+//    }
+//
+//
+//    public static Boolean injectAboveEqualApiLevel14(Context context,String dexPath, String defaultDexOptPath, String nativeLibPath) {
+//        Log.i("mytest", "--> injectAboveEqualApiLevel14");
+//
+//        test(defaultDexOptPath);
+//        ClassLoader pathClassLoader =  context.getClassLoader();
+//        DexClassLoader dexClassLoader = new DexClassLoader(dexPath, defaultDexOptPath, nativeLibPath, pathClassLoader.getParent());
+//        try {
+//
+//            Object arr = getDexElements(getPathList(pathClassLoader));
+//
+//            int len = Array.getLength(arr);
+//            for (int k = 0; k < len; ++k) {
+//                Log.v("mytest","class cc  " + Array.get(arr, k).toString());
+//            }
+//
+//            Object dexElements = combineArray(
+//                    getDexElements(getPathList(dexClassLoader)),
+//                    getDexElements(getPathList(pathClassLoader))
+//            );
+//            Object pathList = getPathList(pathClassLoader);
+//            setField(pathList, pathList.getClass(), "dexElements", dexElements);
+//        } catch (Throwable e) {
+//            e.printStackTrace();
+//            return false;
+//        }
+//        Log.i("mytest", "<-- injectAboveEqualApiLevel14 End.");
+//        return true;
+//    }
+//
+//    private static Object getPathList(Object baseDexClassLoader)
+//            throws IllegalArgumentException, NoSuchFieldException, IllegalAccessException, ClassNotFoundException {
+//        return getField(baseDexClassLoader, Class.forName("dalvik.system.BaseDexClassLoader"), "pathList");
+//    }
+//
+//
+//    private static Object getDexElements(Object paramObject)
+//            throws IllegalArgumentException, NoSuchFieldException, IllegalAccessException {
+//        return getField(paramObject, paramObject.getClass(), "dexElements");
+//    }
+//
+//
+//    private static Object getField(Object obj, Class<?> cl, String field)
+//            throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+//        Field localField = cl.getDeclaredField(field);
+//        localField.setAccessible(true);
+//        return localField.get(obj);
+//    }
+//
+//
+//    private static void setField(Object obj, Class<?> cl, String field, Object value)
+//            throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+//        Field localField = cl.getDeclaredField(field);
+//        localField.setAccessible(true);
+//        localField.set(obj, value);
+//    }
+//
+//    private static Object combineArray(Object arrayLhs, Object arrayRhs) {
+//        Class<?> localClass = arrayLhs.getClass().getComponentType();
+//        int i = Array.getLength(arrayLhs);
+//        int j = i + Array.getLength(arrayRhs);
+//        Object result = Array.newInstance(localClass, j);
+//        for (int k = 0; k < j; ++k) {
+//            if (k < i) {
+//                Array.set(result, k, Array.get(arrayLhs, k));
+//            } else {
+//                Array.set(result, k, Array.get(arrayRhs, k - i));
+//            }
+//        }
+//        return result;
+//    }
 }
