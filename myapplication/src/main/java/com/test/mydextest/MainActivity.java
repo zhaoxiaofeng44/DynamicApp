@@ -8,20 +8,24 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+
+import com.test.myapplication.R;
+
 import java.io.IOException;
 import java.io.InputStream;
-
 
 public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main);
+
+
         Log.v("mytest","test my mainactivity  " );
 
         ImageView mCsBgImageView = new ImageView(this);
-        mCsBgImageView.setImageBitmap(getImageFromAssetsFile("aaa.png"));
+        mCsBgImageView.setImageBitmap(getImageFromAssetsFile("ddd.png"));
 
         //mCsBgImageView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         addContentView(mCsBgImageView,new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
